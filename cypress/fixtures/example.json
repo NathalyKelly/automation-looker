@@ -1,0 +1,39 @@
+{
+  "name": "Using fixtures to represent data",
+  "email": "hello@cypress.io",
+  "body": "Fixtures are a great way to mock data for responses to routes"
+}
+
+
+cy.get(`[title="${cpfSemAspas}"]`, { timeout: 10000 }).then((element) => {
+  let resultado = 'Não';
+
+  if (element.length > 0) {
+    // Se encontrar o CPF, marca como "Sim"
+
+  } else {
+    // Se o CPF não for encontrado, verifica se há a mensagem "Não há dados"
+    cy.get('.noData', { timeout: 5000 }).then((noDataElement) => {
+      if (noDataElement.length > 0) {
+        // Se a mensagem "Não há dados" for encontrada, marca como "Não"
+        cy.log(`CPF ${cpfSemAspas} não encontrado, mensagem "Não há dados" encontrada`);
+        resultado = 'Não';
+      } else {
+        // Caso não encontre nem o CPF nem a mensagem "Não há dados", marca como "Não"
+        cy.log(`CPF ${cpfSemAspas} não encontrado e não há a mensagem "Não há dados"`);
+        resultado = 'Não';
+      }
+    });
+  }
+
+  // Adiciona o CPF e o resultado à lista de resultados
+  resultados.push({ CPF: cpfSemAspas, Encontrado: resultado });
+
+  // Após o término da iteração de todos os CPFs, cria o arquivo
+  if (index === dados.length - 1) {
+    // Cria o arquivo CSV com os resultados usando Cypress
+    const csvContent = 'CPF,Encontrado\n' + resultados.map((linha) => `${linha.CPF},${linha.Encontrado}`).join('\n');
+    cy.writeFile('resultados_validacao.csv', csvContent); // Gera o arquivo CSV
+    cy.log('Arquivo de resultados criado com sucesso!');
+  }
+});
